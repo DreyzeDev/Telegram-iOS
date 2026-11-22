@@ -44,6 +44,10 @@ jobs:
             echo "OVERRIDE_XCODE=--overrideXcodeVersion" >> "$GITHUB_ENV"
           fi
           sudo xcode-select -s "$XCODE/Contents/Developer"
+          # Some third-party build scripts (dav1d) hardcode /Applications/Xcode.app.
+          sudo rm -rf /Applications/Xcode.app
+          sudo ln -s "$XCODE" /Applications/Xcode.app
+          ls -la /Applications/Xcode.app
           xcodebuild -version
 
       - name: Free disk space
