@@ -121,10 +121,13 @@ jobs:
             --configuration=release_arm64 \
             --buildNumber="$BUILD_NUMBER"
 
+          # Bazel 8 names the output directory differently from Telegram's old CI glob
+          # (e.g. ios_arm64-opt-ios-arm64-min12.0-applebin_ios-ST-<hash>), so search for it.
           mkdir -p build/artifacts
-          for f in bazel-out/applebin_ios-ios_arm*-opt-ST-*/bin/Telegram/Telegram.ipa; do
-            cp "$f" build/artifacts/
-          done
+          IPA=$(find -L bazel-out/ -maxdepth 6 -path '*/bin/Telegram/Telegram.ipa' -type f | head -1)
+          echo "IPA=$IPA"
+          test -n "$IPA"
+          cp "$IPA" build/artifacts/Telegram.ipa
           ls -lh build/artifacts
           df -h /
 
