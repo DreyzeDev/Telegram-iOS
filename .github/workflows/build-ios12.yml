@@ -104,11 +104,17 @@ jobs:
           sed -i '' 's/    if expire and expire < datetime.datetime.now():/    if False and expire:/' "$PLISTTOOL"
           grep -n "if False and expire" "$PLISTTOOL"
 
+          # The fake signing certificate expired too, so the keychain has no matching identity.
+          # Sign ad hoc instead (rules_apple skips the identity lookup for "-"); the IPA is
+          # re-signed with ldid for jailbroken devices anyway. Make.py at this revision ignores
+          # --bazelArguments, so the flag goes into the workspace .bazelrc.
+          echo 'build --ios_signing_cert_name=-' >> .bazelrc
+          tail -2 .bazelrc
+
           python3 build-system/Make/ImportCertificates.py --path build-system/fake-codesigning/certs
           python3 -u build-system/Make/Make.py \
             --bazelUserRoot="$BAZEL_USER_ROOT" \
             ${OVERRIDE_XCODE:-} \
-            --bazelArguments="--local_resources=memory=HOST_RAM*.75" \
             build \
             --configurationPath="build-system/appstore-configuration.json" \
             --codesigningInformationPath=build-system/fake-codesigning \
