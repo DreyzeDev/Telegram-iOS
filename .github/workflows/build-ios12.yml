@@ -98,6 +98,12 @@ jobs:
             cp build-system/fake-codesigning/BroadcastUpload.mobileprovision build-system/fake-codesigning/profiles/
           fi
 
+          # The fake-codesigning profiles shipped at this revision expired on 2025-10-29. The IPA is
+          # re-signed for jailbroken devices afterwards, so skip rules_apple's expiration check.
+          PLISTTOOL=build-system/bazel-rules/rules_apple/tools/plisttool/plisttool.py
+          sed -i '' 's/    if expire and expire < datetime.datetime.now():/    if False and expire:/' "$PLISTTOOL"
+          grep -n "if False and expire" "$PLISTTOOL"
+
           python3 build-system/Make/ImportCertificates.py --path build-system/fake-codesigning/certs
           python3 -u build-system/Make/Make.py \
             --bazelUserRoot="$BAZEL_USER_ROOT" \
