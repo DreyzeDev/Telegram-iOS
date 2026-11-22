@@ -50,6 +50,18 @@ jobs:
           ls -la /Applications/Xcode.app
           xcodebuild -version
 
+      # ibtool (LaunchScreen.xib) needs the iOS platform runtime that matches the selected Xcode SDK.
+      - name: Install iOS platform for Xcode
+        run: |
+          set -x
+          SDK_VERSION=$(xcrun --sdk iphoneos --show-sdk-version)
+          xcrun simctl runtime list || true
+          if ! xcrun simctl runtime list 2>/dev/null | grep -q "iOS ${SDK_VERSION}"; then
+            sudo xcodebuild -downloadPlatform iOS -buildVersion "${SDK_VERSION}" || xcodebuild -downloadPlatform iOS
+          fi
+          xcrun simctl runtime list || true
+          df -h /
+
       - name: Free disk space
         run: |
           df -h /
