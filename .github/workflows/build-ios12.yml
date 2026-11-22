@@ -18,8 +18,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: false
           fetch-depth: 0
+
+      # tgcalls and rlottie use relative submodule URLs (../tgcalls.git), which resolve to
+      # this fork; point them back at the upstream TelegramMessenger repositories.
+      - name: Fetch submodules
+        run: |
+          set -x
+          git config --global url."https://github.com/TelegramMessenger/".insteadOf "https://github.com/${GITHUB_REPOSITORY_OWNER}/"
+          git submodule sync --recursive
+          git submodule update --init --recursive --jobs 8
+          git submodule status | head -20
 
       - name: Select Xcode
         run: |
