@@ -76,6 +76,12 @@ jobs:
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> "$GITHUB_ENV"
           echo "APP_VERSION=$APP_VERSION" >> "$GITHUB_ENV"
 
+          # At this revision BroadcastUpload.mobileprovision sits next to profiles/ instead of inside it,
+          # so the build_configuration repo lacks the target the Telegram BUILD file references.
+          if [ ! -f build-system/fake-codesigning/profiles/BroadcastUpload.mobileprovision ]; then
+            cp build-system/fake-codesigning/BroadcastUpload.mobileprovision build-system/fake-codesigning/profiles/
+          fi
+
           python3 build-system/Make/ImportCertificates.py --path build-system/fake-codesigning/certs
           python3 -u build-system/Make/Make.py \
             --bazelUserRoot="$BAZEL_USER_ROOT" \
